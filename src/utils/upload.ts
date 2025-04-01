@@ -32,13 +32,14 @@ export const uploadData = multer({
       'text/csv',
       'application/json',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/x-sqlite3',
+      'application/vnd.sqlite3',
     ];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only CSV, JSON, and XLSX files are allowed.'));
+      cb(new Error('Invalid file type. Only CSV, JSON, XLSX, and SQLite files are allowed.'));
     }
   },
   limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
 });
-
