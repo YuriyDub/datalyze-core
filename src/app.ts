@@ -6,6 +6,7 @@ import fileRoutes from './routes/fileRoutes';
 import cookieParser from 'cookie-parser';
 import { camelCaseMiddleware } from './middleware/camelCaseMiddleware';
 import fileUpload from 'express-fileupload';
+import { Dataset } from './models/Dataset';
 
 dotenv.config();
 
@@ -36,6 +37,17 @@ app.use(
 app.use('/api/files', fileRoutes);
 
 const PORT = process.env.PORT || 3000;
+
+// Initialize database tables
+(async () => {
+  try {
+    await Dataset.createTable();
+    console.log('Database tables initialized');
+  } catch (error) {
+    console.error('Error initializing database tables:', error);
+  }
+})();
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

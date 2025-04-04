@@ -24,3 +24,11 @@ export interface IUploadResponse {
   key?: string;
   message?: string;
 }
+
+export interface IDatasetInfo {
+  key: string;
+  name: string;
+  size: number;
+  lastModified: Date;
+  type: string;
+}

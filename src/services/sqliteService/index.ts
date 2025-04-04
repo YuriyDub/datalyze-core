@@ -273,7 +273,6 @@ export class SqliteService {
       if (!fs.existsSync(this.TEMP_DIR)) {
         fs.mkdirSync(this.TEMP_DIR, { recursive: true });
       }
-
       const uniqueId = uuidv4();
       const jsonFilePath = path.join(this.TEMP_DIR, `${uniqueId}_${file.name}`);
       const dbFilePath = path.join(this.TEMP_DIR, `${uniqueId}_${path.parse(file.name).name}.db`);
