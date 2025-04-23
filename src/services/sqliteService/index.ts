@@ -246,7 +246,7 @@ export class SqliteService {
   }
 
   private static insertDataIntoTable(db: sqlite3.Database, tableName: string, data: any): void {
-    const columns = Object.keys(data).filter((key) => key !== 'id');
+    const columns = Object.keys(data);
     const placeholders = columns.map(() => '?').join(', ');
     const values = columns.map((col) => {
       const val = data[col];
