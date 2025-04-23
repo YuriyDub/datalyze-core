@@ -18,7 +18,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? 'http://ec2-51-20-122-41.eu-north-1.compute.amazonaws.com/api'
+        : 'http://localhost:5173',
     credentials: true,
   }),
 );
@@ -47,11 +50,11 @@ const PORT = process.env.PORT || 3000;
   try {
     // Initialize LLM service
     LLMService.initialize();
-    
+
     // Create database tables
     await Dataset.createTable();
     await Chat.createTables();
-    
+
     console.log('Database tables and services initialized');
   } catch (error) {
     console.error('Error initializing database tables and services:', error);
