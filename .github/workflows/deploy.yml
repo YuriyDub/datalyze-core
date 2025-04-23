@@ -29,7 +29,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ubuntu/datalyze-core
+            cd /home/ubuntu/repos/datalyze-core
             git pull origin main
             npm install
             pm2 restart datalyze-core
