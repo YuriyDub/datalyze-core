@@ -20,7 +20,7 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === 'production'
-        ? 'http://ec2-51-20-122-41.eu-north-1.compute.amazonaws.com/api'
+        ? 'http://ec2-51-20-122-41.eu-north-1.compute.amazonaws.com'
         : 'http://localhost:5173',
     credentials: true,
   }),
