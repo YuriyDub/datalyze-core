@@ -3,7 +3,7 @@ name: Deploy Backend
 on:
   push:
     branches:
-      - main  # Змініть на вашу гілку
+      - main # Змініть на вашу гілку
 
 jobs:
   deploy:
@@ -29,7 +29,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/ec2-user/your-backend
+            cd /home/ubuntu/datalyze-core
             git pull origin main
             npm install
-            pm2 restart your-backend
+            pm2 restart datalyze-core
