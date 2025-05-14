@@ -76,13 +76,8 @@ const authController = {
     const { email, password } = req.body;
     try {
       const user = await User.findByEmail(email);
-      if (!user) {
-        res.status(400).json({ message: 'Invalid password or email' });
-        return;
-      }
-
       const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
+      if (!isPasswordValid || !user) {
         res.status(400).json({ message: 'Invalid password or email' });
         return;
       }
