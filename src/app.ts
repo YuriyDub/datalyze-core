@@ -32,12 +32,12 @@ app.use('/api/chats', chatRoutes);
 
 app.use(
   fileUpload({
-    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB limit
+    limits: { fileSize: 100 * 1024 * 1024 }, 
     abortOnLimit: true,
-    createParentPath: true, // Creates upload directory if needed
-    useTempFiles: false, // Process in memory (true for disk storage)
+    createParentPath: true, 
+    useTempFiles: false, 
     safeFileNames: true,
-    preserveExtension: 4, // Keeps .jpeg instead of .jpg
+    preserveExtension: 4, 
   }),
 );
 
@@ -45,13 +45,11 @@ app.use('/api/files', fileRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-// Initialize services and database tables
+
 (async () => {
   try {
-    // Initialize LLM service
     LLMService.initialize();
 
-    // Create database tables
     await Dataset.createTable();
     await Chat.createTables();
 

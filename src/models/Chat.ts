@@ -185,7 +185,6 @@ export class Chat {
         title || null,
       ]);
 
-      // Update the chat's updated_at timestamp
       await pool.query(
         `
         UPDATE chats

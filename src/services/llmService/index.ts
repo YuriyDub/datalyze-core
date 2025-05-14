@@ -15,23 +15,16 @@ export class LLMService {
   private static readonly TEMP_DIR = 'uploads/temp';
   private static readonly OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-  /**
-   * Initialize the LLM service
-   */
   static initialize(): void {
     if (!this.OPENAI_API_KEY) {
       console.warn('OPENAI_API_KEY is not set. LLM functionality will not work.');
     }
 
-    // Ensure temp directory exists
     if (!fs.existsSync(this.TEMP_DIR)) {
       fs.mkdirSync(this.TEMP_DIR, { recursive: true });
     }
   }
 
-  /**
-   * Get the schema of a SQLite database
-   */
   private static async getDatabaseSchema(dbPath: string): Promise<IDatabaseSchema> {
     return new Promise((resolve, reject) => {
       const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
@@ -43,7 +36,6 @@ export class LLMService {
 
       const schema: IDatabaseSchema = { tables: [] };
 
-      // Get all tables
       db.all(
         `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`,
         [],
@@ -54,7 +46,6 @@ export class LLMService {
             return;
           }
 
-          // No tables found
           if (tables.length === 0) {
             db.close();
             resolve(schema);
@@ -63,7 +54,6 @@ export class LLMService {
 
           let tablesProcessed = 0;
 
-          // For each table, get its columns
           tables.forEach((table) => {
             db.all(`PRAGMA table_info(${table.name})`, [], (err, columns: any[]) => {
               if (err) {
@@ -83,7 +73,6 @@ export class LLMService {
               schema.tables.push(tableSchema);
               tablesProcessed++;
 
-              // If all tables have been processed, resolve
               if (tablesProcessed === tables.length) {
                 db.close();
                 resolve(schema);
@@ -95,9 +84,6 @@ export class LLMService {
     });
   }
 
-  /**
-   * Execute a SQL query on a SQLite database
-   */
   private static async executeSqlQuery(
     dbPath: string,
     query: string,
@@ -117,7 +103,6 @@ export class LLMService {
           return;
         }
 
-        // Get column names from the first row
         const columns = rows.length > 0 ? Object.keys(toCamelCase(rows[0] as object)) : [];
 
         db.close();
@@ -126,23 +111,17 @@ export class LLMService {
     });
   }
 
-  /**
-   * Download a dataset from S3 and save it to a temporary file
-   */
   private static async downloadDataset(datasetId: string): Promise<string> {
-    // Get the dataset from the database
     const dataset = await Dataset.findById(datasetId);
     if (!dataset) {
       throw new Error(`Dataset with ID ${datasetId} not found`);
     }
 
-    // Generate a presigned URL for the dataset
     const url = await S3Service.generatePresignedUrl(dataset.file_key);
     if (!url) {
       throw new Error(`Failed to generate presigned URL for dataset ${datasetId}`);
     }
 
-    // Download the file
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`Failed to download dataset: ${response.statusText}`);
@@ -151,7 +130,6 @@ export class LLMService {
     const buffer = await response.arrayBuffer();
     const dbPath = path.join(this.TEMP_DIR, `${dataset.id}.db`);
 
-    // Save the file
     fs.writeFileSync(dbPath, Buffer.from(buffer));
 
     return dbPath;
@@ -160,8 +138,7 @@ export class LLMService {
   private static extractSqlQueryAndTile(content: string): { title?: string; sqlQuery?: string } {
     const regex = /```([^\n]+) sql\n([\s\S]*?)```/gi;
     const matches = [...content.matchAll(regex)];
-    const [_, title, sqlQuery] = matches[0];
-    // Look for SQL query in markdown code blocks
+    const [_, title, sqlQuery] = matches[0] ?? [];
     if (sqlQuery) {
       return { title: title.trim(), sqlQuery: sqlQuery.trim() };
     }
@@ -183,7 +160,6 @@ export class LLMService {
         };
       }
 
-      // Get the chat from the database
       const chat = await Chat.findById(chatId);
       if (!chat) {
         return {
@@ -192,7 +168,6 @@ export class LLMService {
         };
       }
 
-      // Verify the chat belongs to the user
       if (chat.user_id !== userId) {
         return {
           content: 'You do not have permission to access this chat',
@@ -200,32 +175,25 @@ export class LLMService {
         };
       }
 
-      // Download the dataset
       const dbPath = await this.downloadDataset(chat.dataset_id);
 
-      // Get the database schema
       const schema = await this.getDatabaseSchema(dbPath);
 
-      // Get previous messages for context
       const previousMessages = await Chat.getMessages(chatId);
 
-      // Create a formatted history for the LLM
       const chatHistory = previousMessages.map((msg) => ({
         role: msg.role,
         content: msg.content,
       }));
 
-      // Add the new user message to the database
       await Chat.addMessage(chatId, message, 'user');
 
-      // Create the LLM chain
       const model = new ChatOpenAI({
         openAIApiKey: this.OPENAI_API_KEY,
         modelName: 'gpt-4o-mini',
         temperature: 0,
       });
 
-      // Create the system prompt
       const systemPrompt = `
 You are a data analytics assistant that helps users analyze SQLite databases.
 You have access to a database with the following schema:
@@ -279,15 +247,11 @@ Have any questions?
 
       const chain = RunnableSequence.from([chatPrompt, model, new StringOutputParser()]);
 
-      // Execute the chain
       const result = await chain.invoke({});
 
-      // Extract SQL query if present
       const { sqlQuery, title } = this.extractSqlQueryAndTile(result);
-      // Add the assistant's response to the database
       await Chat.addMessage(chatId, result, 'assistant', title, sqlQuery);
 
-      // Clean up the temporary file
       try {
         fs.unlinkSync(dbPath);
       } catch (error) {
@@ -313,29 +277,20 @@ Have any questions?
     }
   }
 
-  /**
-   * Execute a SQL query and return the results
-   */
   static async executeQuery(datasetId: string, sqlQuery: string, userId: string): Promise<any> {
     try {
-      // Get the dataset from the database
       const dataset = await Dataset.findById(datasetId);
       if (!dataset) {
         throw new Error(`Dataset with ID ${datasetId} not found`);
       }
 
-      // Verify the dataset belongs to the user
       if (dataset.user_id !== userId) {
         throw new Error('You do not have permission to access this dataset');
       }
 
-      // Download the dataset
       const dbPath = await this.downloadDataset(datasetId);
 
-      // Execute the query
       const result = await this.executeSqlQuery(dbPath, sqlQuery);
-			console.log('Query result:', result);
-      // Clean up the temporary file
       try {
         fs.unlinkSync(dbPath);
       } catch (error) {

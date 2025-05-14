@@ -4,9 +4,6 @@ import { Dataset } from '../models/Dataset';
 import { LLMService } from '../services/llmService';
 
 const chatController = {
-  /**
-   * Create a new chat session
-   */
   async createChat(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as any).user.id;
@@ -17,7 +14,6 @@ const chatController = {
         return;
       }
 
-      // Verify the dataset exists and belongs to the user
       const dataset = await Dataset.findById(datasetId);
       if (!dataset) {
         res.status(404).json({ error: 'Dataset not found' });
@@ -29,10 +25,8 @@ const chatController = {
         return;
       }
 
-      // Create a default title if not provided
       const chatTitle = title || `Chat about ${dataset.name}`;
 
-      // Create the chat
       const chat = await Chat.create(userId, datasetId, chatTitle);
 
       res.json({
@@ -64,9 +58,6 @@ const chatController = {
     }
   },
 
-  /**
-   * Get a chat by ID
-   */
   async getChat(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as any).user.id;
@@ -77,20 +68,17 @@ const chatController = {
         return;
       }
 
-      // Get the chat
       const chat = await Chat.findById(id);
       if (!chat) {
         res.status(404).json({ error: 'Chat not found' });
         return;
       }
 
-      // Verify the chat belongs to the user
       if (chat.user_id !== userId) {
         res.status(403).json({ error: 'You do not have permission to access this chat' });
         return;
       }
 
-      // Get the chat messages
       const messages = await Chat.getMessages(id);
 
       res.json({
@@ -109,9 +97,6 @@ const chatController = {
     }
   },
 
-  /**
-   * Update a chat's title
-   */
   async updateChatTitle(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as any).user.id;
@@ -128,20 +113,17 @@ const chatController = {
         return;
       }
 
-      // Get the chat
       const chat = await Chat.findById(id);
       if (!chat) {
         res.status(404).json({ error: 'Chat not found' });
         return;
       }
 
-      // Verify the chat belongs to the user
       if (chat.user_id !== userId) {
         res.status(403).json({ error: 'You do not have permission to access this chat' });
         return;
       }
 
-      // Update the title
       const updatedChat = await Chat.updateTitle(id, title);
 
       res.json({
@@ -157,9 +139,6 @@ const chatController = {
     }
   },
 
-  /**
-   * Delete a chat
-   */
   async deleteChat(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as any).user.id;
@@ -170,20 +149,17 @@ const chatController = {
         return;
       }
 
-      // Get the chat
       const chat = await Chat.findById(id);
       if (!chat) {
         res.status(404).json({ error: 'Chat not found' });
         return;
       }
 
-      // Verify the chat belongs to the user
       if (chat.user_id !== userId) {
         res.status(403).json({ error: 'You do not have permission to access this chat' });
         return;
       }
 
-      // Delete the chat
       const success = await Chat.delete(id);
 
       if (success) {
@@ -215,7 +191,6 @@ const chatController = {
         return;
       }
 
-      // Process the message with LLM
       const response = await LLMService.processMessage(id, message, userId);
 
       if (response.error) {
@@ -236,9 +211,6 @@ const chatController = {
     }
   },
 
-  /**
-   * Execute a SQL query
-   */
   async executeQuery(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as any).user.id;
@@ -254,7 +226,6 @@ const chatController = {
         return;
       }
 
-      // Execute the query
       const result = await LLMService.executeQuery(datasetId, sqlQuery, userId);
 
       res.json({

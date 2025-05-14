@@ -53,7 +53,6 @@ const fileController = {
 
       const file = files.file as UploadedFile;
 
-      // Upload to S3
       const result = await S3Service.uploadPrivateDataset(file, userId);
 
       if (!result?.key) {
@@ -61,10 +60,8 @@ const fileController = {
         return;
       }
 
-      // Get the file name from the uploaded file if not provided
       const fileName = name || file.name;
 
-      // Save to database
       const dataset = await Dataset.create(fileName, result.key, userId, file.mimetype, file.size);
 
       res.json({
@@ -91,7 +88,6 @@ const fileController = {
     }
   },
 
-  // New dataset management methods
   async getUserDatasets(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as any).user.id;
@@ -116,7 +112,6 @@ const fileController = {
         return;
       }
 
-      // First get the dataset from the database
       const dataset = await Dataset.findByFileId(id);
 
       if (!dataset) {
@@ -124,7 +119,6 @@ const fileController = {
         return;
       }
 
-      // First delete from S3
       const s3Success = await S3Service.deleteDataset(dataset.file_key);
 
       if (!s3Success) {
@@ -132,13 +126,11 @@ const fileController = {
         return;
       }
 
-      // Then delete from database
       const dbSuccess = await Dataset.deleteByFileKey(dataset.file_key);
 
       if (dbSuccess) {
         res.json({ message: 'Dataset deleted successfully' });
       } else {
-        // S3 delete succeeded but DB delete failed
         res.status(500).json({
           error: 'Dataset was deleted from storage but failed to update database records',
           partialSuccess: true,
@@ -165,7 +157,6 @@ const fileController = {
         return;
       }
 
-      // First get the dataset from the database
       const dataset = await Dataset.findByFileId(id);
 
       if (!dataset) {
@@ -173,7 +164,6 @@ const fileController = {
         return;
       }
 
-      // Rename in S3
       const newKey = await S3Service.renameDataset(dataset.file_key, newName, userId);
 
       if (!newKey) {
@@ -181,10 +171,8 @@ const fileController = {
         return;
       }
 
-      // Update the database record
       const updatedDataset = await Dataset.updateFileKey(dataset.id, newKey);
 
-      // Also update the name in the database
       const renamedDataset = await Dataset.updateName(dataset.id, newName);
 
       if (updatedDataset && renamedDataset) {
@@ -236,16 +224,14 @@ const fileController = {
         return;
       }
 
-      // Get the file name from the uploaded file if not provided
       const fileName = name || `${file.name.replace(/\.[^/.]+$/, '')}.sqlite`;
 
-      // Save to database
       const dataset = await Dataset.create(
         fileName,
         result.key,
         userId,
         'application/x-sqlite3',
-        file.size, // This is approximate since the SQLite file size might differ
+        file.size,
       );
 
       res.json({
@@ -303,16 +289,14 @@ const fileController = {
         return;
       }
 
-      // Get the file name from the uploaded file if not provided
       const fileName = name || `${file.name.replace(/\.[^/.]+$/, '')}.sqlite`;
 
-      // Save to database
       const dataset = await Dataset.create(
         fileName,
         result.key,
         userId,
         'application/x-sqlite3',
-        file.size, // This is approximate since the SQLite file size might differ
+        file.size, 
       );
 
       res.json({
@@ -349,10 +333,8 @@ const fileController = {
         return;
       }
 
-      // Get the file name from the uploaded file if not provided
       const fileName = name || file.name;
 
-      // Save to database
       const dataset = await Dataset.create(
         fileName,
         result.key,
