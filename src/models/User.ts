@@ -14,7 +14,7 @@ export interface IUser {
 class User {
   static async create(user: IUser) {
     const hashedPassword = await bcrypt.hash(user.password, 10);
-    const { `rows` } = await pool.query(
+    const { rows } = await pool.query(
       `INSERT INTO users (id, username, password, full_name, email, phone)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
