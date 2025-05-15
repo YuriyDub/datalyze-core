@@ -38,9 +38,6 @@ const chatController = {
     }
   },
 
-  /**
-   * Get all chats for a user
-   */
   async getUserChats(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as any).user.id;
@@ -172,9 +169,6 @@ const chatController = {
     }
   },
 
-  /**
-   * Send a message to the chat
-   */
   async sendMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const userId = (req as any).user.id;

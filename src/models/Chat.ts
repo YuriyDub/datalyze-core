@@ -21,9 +21,7 @@ export interface IChatMessage {
 }
 
 export class Chat {
-  /**
-   * Create the chats and chat_messages tables if they don't exist
-   */
+
   static async createTables(): Promise<void> {
     const chatTableQuery = `
       CREATE TABLE IF NOT EXISTS chats (
@@ -57,9 +55,6 @@ export class Chat {
     }
   }
 
-  /**
-   * Create a new chat session
-   */
   static async create(userId: string, datasetId: string, title: string): Promise<IChat> {
     const id = uuidv4();
     const query = `
@@ -77,9 +72,6 @@ export class Chat {
     }
   }
 
-  /**
-   * Get all chats for a user
-   */
   static async findByUserId(userId: string): Promise<IChat[]> {
     const query = `
       SELECT c.*, d.name as dataset_name
@@ -98,9 +90,6 @@ export class Chat {
     }
   }
 
-  /**
-   * Get a chat by its ID
-   */
   static async findById(id: string): Promise<IChat | null> {
     const query = `
       SELECT c.*, d.name as dataset_name
@@ -118,9 +107,6 @@ export class Chat {
     }
   }
 
-  /**
-   * Update a chat's title
-   */
   static async updateTitle(id: string, title: string): Promise<IChat | null> {
     const query = `
       UPDATE chats
@@ -138,9 +124,6 @@ export class Chat {
     }
   }
 
-  /**
-   * Delete a chat by its ID
-   */
   static async delete(id: string): Promise<boolean> {
     const query = `
       DELETE FROM chats
@@ -157,9 +140,6 @@ export class Chat {
     }
   }
 
-  /**
-   * Add a message to a chat
-   */
   static async addMessage(
     chatId: string,
     content: string,
@@ -201,9 +181,6 @@ export class Chat {
     }
   }
 
-  /**
-   * Get all messages for a chat
-   */
   static async getMessages(chatId: string): Promise<IChatMessage[]> {
     const query = `
       SELECT *

@@ -72,9 +72,6 @@ export class S3Service {
     }
   }
 
-  /**
-   * List all datasets for a specific user
-   */
   static async listUserDatasets(userId: string): Promise<IDatasetInfo[]> {
     const prefix = `${S3_CONFIG.privateDatasetPrefix}${userId}/`;
 

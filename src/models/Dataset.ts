@@ -12,9 +12,7 @@ export interface IDataset {
 }
 
 export class Dataset {
-  /**
-   * Create the datasets table if it doesn't exist
-   */
+
   static async createTable(): Promise<void> {
     const query = `
       CREATE TABLE IF NOT EXISTS datasets (
@@ -36,9 +34,6 @@ export class Dataset {
     }
   }
 
-  /**
-   * Create a new dataset record
-   */
   static async create(
     name: string,
     fileKey: string,
@@ -62,9 +57,6 @@ export class Dataset {
     }
   }
 
-  /**
-   * Get all datasets for a user
-   */
   static async findByUserId(userId: string): Promise<IDataset[]> {
     const query = `
       SELECT * FROM datasets
@@ -81,9 +73,6 @@ export class Dataset {
     }
   }
 
-  /**
-   * Get a dataset by its ID
-   */
   static async findById(id: string): Promise<IDataset | null> {
     const query = `
       SELECT * FROM datasets
@@ -99,9 +88,6 @@ export class Dataset {
     }
   }
 
-  /**
-   * Get a dataset by its file key
-   */
   static async findByFileId(id: string): Promise<IDataset | null> {
     const query = `
       SELECT * FROM datasets
@@ -117,9 +103,6 @@ export class Dataset {
     }
   }
 
-  /**
-   * Update a dataset's name
-   */
   static async updateName(id: string, name: string): Promise<IDataset | null> {
     const query = `
       UPDATE datasets
@@ -137,9 +120,6 @@ export class Dataset {
     }
   }
 
-  /**
-   * Update a dataset's file key (when renaming in S3)
-   */
   static async updateFileKey(id: string, fileKey: string): Promise<IDataset | null> {
     const query = `
       UPDATE datasets
@@ -157,9 +137,6 @@ export class Dataset {
     }
   }
 
-  /**
-   * Delete a dataset by its ID
-   */
   static async delete(id: string): Promise<boolean> {
     const query = `
       DELETE FROM datasets
@@ -176,9 +153,6 @@ export class Dataset {
     }
   }
 
-  /**
-   * Delete a dataset by its file key
-   */
   static async deleteByFileKey(fileKey: string): Promise<boolean> {
     const query = `
       DELETE FROM datasets
